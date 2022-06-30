@@ -1,7 +1,7 @@
 import sys
 sys.path.append("c:\\users\\lt\\anaconda3\\envs\\pythondata\\lib\\site-packages")
 from splinter import Browser
-from bs4 import BeautifulSoup as soup
+from bs4 import BeautifulSoup as Soup
 import pandas as pd
 import datetime as dt
 from webdriver_manager.chrome import ChromeDriverManager
@@ -18,7 +18,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemispheres": hem_imgs()
   }
 
   # Stop webdriver and return data
@@ -35,7 +36,7 @@ def mars_news(browser):
   browser.is_element_present_by_css('div.list_text', wait_time=1)
 
   html = browser.html
-  news_soup = soup(html, 'html.parser')
+  news_soup = Soup(html, 'html.parser')
   slide_elem = news_soup.select_one('div.list_text')
 
   # Add try/except for error handling
@@ -64,7 +65,7 @@ def featured_image(browser):
 
   # Parse the resulting html with soup
   html = browser.html
-  img_soup = soup(html, 'html.parser')
+  img_soup = Soup(html, 'html.parser')
 
   try:
     # Find the relative image url
@@ -88,8 +89,33 @@ def mars_facts():
 
   return df.to_html()
 
+def hem_imgs():
+  executable_path = {'executable_path': ChromeDriverManager().install()}
+  browser = Browser('chrome', **executable_path, headless=False)
+  
+  url = 'https://marshemispheres.com/'
+
+  browser.visit(url)
+  browser.is_element_present_by_css('div.list_text', wait_time=1)
+
+  # 2. Create a list to hold the images and titles.
+  hemisphere_image_urls = []
+
+  # 3. Write code to retrieve the image urls and titles for each hemisphere.
+  # Parse the resulting html with soup
+  soup = Soup(browser.html, 'html.parser')
+  results = soup.find_all('h3')[:-1]
+  for result in results:
+    page_with_jpg_url = f"{url}{result.text.split()[0].lower()}.html"
+    browser.visit(page_with_jpg_url)
+    browser.is_element_present_by_css('div.list_text', wait_time=1)
+    soup = Soup(browser.html, 'html.parser')
+    img_url_rel = soup.find(class_='downloads').find("ul").find('li').find('a').get('href')
+    img_url = url + img_url_rel
+    # print(img_url)
+    hemisphere_image_urls.append({'img_url': img_url, 'title': result.text})
+  return hemisphere_image_urls
+
 if __name__ == "__main__":
   # If running as script, print scraped data
   print(scrape_all())
-
-  
