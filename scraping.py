@@ -86,8 +86,11 @@ def mars_facts():
 
   df.columns=['description', 'Mars', 'Earth']
   df.set_index('description', inplace=True)
-
-  return df.to_html()
+  # facts_html = df.to_html(classes = "table table-striped")
+  # fsoup = Soup(facts_html, 'html.parser')
+  # fsoup.find(class_="dataframe")['class'] = 'table table-striped'  
+  # return str(fsoup)
+  return df.to_html(classes = 'table table-striped', border = 0)
 
 def hem_imgs():
   executable_path = {'executable_path': ChromeDriverManager().install()}
